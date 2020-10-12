@@ -1,28 +1,18 @@
 <script>
 import { IMAGE } from '@/config/types';
-const TIP = 'An external URL to the .iso, .img, .qcow2 or .raw that the virtual machine should be created from.';
 
 export default {
   props: {
     value: {
       type:    String,
       default: ''
-    },
-    title: {
-      type:     String,
-      default: 'Choose an Image:'
     }
   },
 
   data() {
-    const images = this.$store.getters['cluster/all'](IMAGE) || [];
-
     return {
-      images,
-      tip:        TIP,
-      searchKey:  '',
-      activeName: this.value,
-
+      searchKey:   '',
+      activeName:  this.value,
       pageSize:      12,
       currentPage:   1,
     };
@@ -43,6 +33,9 @@ export default {
       }
 
       return this.readiedImages.slice(start, end);
+    },
+    images() {
+      return this.$store.getters['cluster/all'](IMAGE) || [];
     }
   },
 
@@ -72,13 +65,15 @@ export default {
 <template>
   <div class="vm-choose-image">
     <h2>
-      {{ title }}
+      <slot name="header">
+        Choose an Image:
+      </slot>
     </h2>
 
     <div class="box">
       <div class="row mb-20">
         <div class="col span-6">
-          <input v-model="searchKey" placeholder="Search" />
+          <a-input v-model="searchKey" placeholder="Search" />
         </div>
       </div>
       <div>
@@ -105,22 +100,20 @@ export default {
         </div>
 
         <div class="mt-20">
-          <el-pagination
-            background
-            layout="prev, pager, next"
+          <a-pagination
+            v-model="currentPage"
             :page-size="pageSize"
-            :current-page.sync="currentPage"
             :total="readiedImages.length"
             class="text-center"
           >
-          </el-pagination>
+          </a-pagination>
         </div>
 
         <div class="mt-20">
           <nuxt-link to="/c/local/virtual/harvester.cattle.io.virtualmachineimage">
-            <el-button>
+            <a-button>
               Add Image
-            </el-button>
+            </a-button>
           </nuxt-link>
         </div>
       </div>
@@ -132,8 +125,8 @@ export default {
 .vm-choose-image {
   .list {
     display: grid;
-    grid-template-columns: 22% 22% 22% 22%;
-    grid-column-gap: 3%;
+    grid-template-columns: 23% 23% 23% 23%;
+    justify-content: space-between;
     max-height: 300px;
     overflow-y: auto;
 
@@ -199,15 +192,6 @@ export default {
 
   .box {
     border-radius: calc(3 * var(--border-radius));
-  }
-
-  .sub-title {
-    font-size: 14px;
-    color: var(--help-text);
-  }
-
-  .el-pagination.is-background .el-pager li:not(.disabled).active {
-    background: var(--primary);
   }
 }
 </style>

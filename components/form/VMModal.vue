@@ -1,19 +1,11 @@
 <script>
-import Banner from '@/components/Banner';
 import SortableTable from '@/components/SortableTable';
 
 export default {
-  components: {
-    Banner,
-    SortableTable,
-  },
+  components: { SortableTable },
 
   props: {
     title: {
-      type:     String,
-      required: true
-    },
-    modalName: {
       type:     String,
       required: true
     },
@@ -29,24 +21,21 @@ export default {
         return [];
       }
     },
-    errors: {
-      type:    Array,
-      default: () => {
-        return [];
-      }
-    },
     rowActions: {
-      type:    Boolean,
-      default: true
+      type:     Boolean,
+      default:  true
     },
     buttonText: {
       type:     String,
-      default: ''
+      default:  ''
     }
   },
 
   data() {
-    return { dialogVisible: false };
+    return {
+      dialogVisible: false,
+      passValidate:  false
+    };
   },
 
   methods: {
@@ -58,8 +47,8 @@ export default {
       this.$emit('update:cancel');
     },
     add() {
-      this.$emit('validateError');
-      if (this.errors.length > 0) {
+      this.$emit('validateRules');
+      if (!this.passValidate) {
         return;
       }
       this.$emit('update:add');
@@ -97,57 +86,39 @@ export default {
     >
       <template v-slot:row-actions="scope">
         <div class="action">
-          <button type="button" class="btn btn-sm bg-primary mr-15" @click="handleRow(scope.row, 'modify')">
+          <a-button type="primary" class="mr-15" @click="handleRow(scope.row, 'modify')">
             modify
-          </button>
+          </a-button>
 
-          <button type="button" class="btn btn-sm bg-primary" :disabled="scope.row.disableDelete" @click="handleRow(scope.row, 'delete')">
+          <a-button class="" :disabled="scope.row.disableDelete" @click="handleRow(scope.row, 'delete')">
             delete
-          </button>
+          </a-button>
         </div>
       </template>
     </SortableTable>
 
-    <el-dialog
+    <a-modal
       :title="title"
-      :visible.sync="dialogVisible"
-      width="40%"
+      :visible="dialogVisible"
+      width="680px"
+      @ok="add"
+      @cancel="hide"
     >
       <div class="modal">
         <div class="content mb-20">
           <slot name="content"></slot>
         </div>
-
-        <div v-for="(err,idx) in errors" :key="idx">
-          <Banner color="error" :label="err" />
-        </div>
-
-        <div class="footer mb-20">
-          <button class="btn bg-primary btn-sm mr-20" @click="hide">
-            Cancel
-          </button>
-          <button class="btn bg-primary btn-sm mr-20" @click="add">
-            Save
-          </button>
-        </div>
       </div>
-    </el-dialog>
+    </a-modal>
 
-    <el-button v-if="rowActions" class="btn btn-sm mb-20 mt-20" @click="openModal">
+    <a-button v-if="rowActions" class="mb-20 mt-20" @click="openModal">
       {{ buttonText }}
-    </el-button>
+    </a-button>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .action {
   display: flex;
-}
-
-.modal {
-  .footer {
-    display: flex;
-    justify-content: flex-end;
-  }
 }
 </style>

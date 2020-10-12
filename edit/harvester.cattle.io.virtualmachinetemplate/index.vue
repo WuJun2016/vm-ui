@@ -22,9 +22,7 @@ export default {
 
   components: {
     Footer,
-    Checkbox,
     Collapse,
-    LabeledInput,
     MemoryUnit,
     AddSSHKey,
     DiskModal,
@@ -221,11 +219,6 @@ export default {
         // eslint-disable-next-line no-console
         console.log(err);
       }
-    },
-    validateMax(value) {
-      if (value > 100) {
-        this.$set(this.spec.template.spec.domain.cpu, 'cores', 100);
-      }
     }
   },
 };
@@ -234,66 +227,67 @@ export default {
 <template>
   <el-card class="box-card">
     <div id="vm">
-      <div class="row">
-        <div class="col span-6">
-          <LabeledInput v-model="value.metadata.name" :disabled="isAdd" label="Template Name" required />
+      <a-form-model layout="vertical">
+        <div class="row">
+          <div class="col span-6">
+            <a-form-model-item label="Template Name" required>
+              <a-input v-model="value.metadata.name" :disabled="isAdd" label="Template Name" />
+            </a-form-model-item>
+          </div>
+
+          <div class="col span-6">
+            <a-form-model-item label="Description" required>
+              <a-input v-model="value.spec.description" label="Description" />
+            </a-form-model-item>
+          </div>
         </div>
 
-        <div class="col span-6">
-          <LabeledInput v-model="value.spec.description" label="Description" />
-        </div>
-      </div>
-      <div class="min-spacer"></div>
+        <a-checkbox v-if="isAdd" v-model="isDefaultVersion" :class="{ 'mb-10': true, 'mb-20': !isAdd }">
+          Default version:
+        </a-checkbox>
 
-      <Checkbox v-if="isAdd" v-model="isDefaultVersion" label="Default version" type="checkbox" />
-      <div class="spacer"></div>
+        <ChooseImage v-model="imageName">
+          <template v-slot:header>
+            Choose an image(optional):
+          </template>
+        </ChooseImage>
 
-      <ChooseImage v-model="imageName" title="Choose an image(optional):" />
+        <div class="spacer"></div>
 
-      <div class="spacer"></div>
+        <h2>CPU & Memory::</h2>
+        <div class="row">
+          <div class="col span-5">
+            <a-form-model-item label="CPU Request(core)" required>
+              <a-input-number v-model="spec.template.spec.domain.cpu.cores" style="width: 100%" :min="1" :max="100" />
+            </a-form-model-item>
+          </div>
 
-      <h2>CPU & Memory::</h2>
-      <div class="row">
-        <div class="col span-5">
-          <LabeledInput
-            v-model.number="spec.template.spec.domain.cpu.cores"
-            v-int-number
-            min="1"
-            type="number"
-            label="CPU Request(core)"
-            required
-            @input="validateMax"
-          />
+          <div class="col span-7">
+            <MemoryUnit v-model="memory" value-name="Memory" :value-col="8" :unit-col="4" />
+          </div>
         </div>
 
-        <div class="col span-7">
-          <MemoryUnit v-model="memory" value-name="Memory" :value-col="8" :unit-col="4" />
-        </div>
-      </div>
+        <div class="spacer"></div>
 
-      <div class="spacer"></div>
+        <h2>Add disk storage:</h2>
+        <DiskModal v-model="diskRows" owner="template" />
 
-      <h2>Add disk storage:</h2>
-      <DiskModal v-model="diskRows" owner="template" />
+        <div class="spacer"></div>
 
-      <div class="spacer"></div>
+        <h2>Networks:</h2>
+        <NetworkModal v-model="networkRows" />
 
-      <h2>Networks:</h2>
-      <NetworkModal v-model="networkRows" />
+        <div class="spacer"></div>
 
-      <div class="spacer"></div>
+        <h2>Authentication:</h2>
+        <AddSSHKey :ssh-key="sshKey" @update:sshKey="updateSSHKey" />
 
-      <h2>Authentication:</h2>
-      <AddSSHKey :ssh-key="sshKey" @update:sshKey="updateSSHKey" />
+        <div class="spacer"></div>
 
-      <div class="spacer"></div>
-
-      <Collapse :open.sync="showCloudInit" title="Advanced Options">
-        <CloudConfig @updateCloudConfig="updateCloudConfig" />
-      </Collapse>
-
-      <div class="spacer"></div>
-
+        <Collapse :open.sync="showCloudInit" title="Advanced Options">
+          <CloudConfig @updateCloudConfig="updateCloudConfig" />
+        </Collapse>
+      </a-form-model>
       <Footer :mode="mode" :errors="errors" @save="saveVMT" @done="done" />
     </div>
   </el-card>

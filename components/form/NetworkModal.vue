@@ -1,18 +1,14 @@
 <script>
 import _ from 'lodash';
 import { clone } from '@/utils/object';
-import VMModal from '@/components/form/VMModal';
-import LabeledInput from '@/components/form/LabeledInput';
-import LabeledSelect from '@/components/form/LabeledSelect';
-import PortInputGroup from '@/components/form/PortInputGroup';
 import { sortBy } from '@/utils/sort';
 import { NETWORK_ATTACHMENT } from '@/config/types';
+import VMModal from '@/components/form/VMModal';
+import PortInputGroup from '@/components/form/PortInputGroup';
 
 export default {
   components: {
     VMModal,
-    LabeledInput,
-    LabeledSelect,
     PortInputGroup
   },
 
@@ -34,12 +30,38 @@ export default {
   },
 
   data() {
+    const validateName = (rule, value, callback) => {
+      const arr = _.filter(this.rows, (o, index) => {
+        return value === o.name;
+      });
+
+      if ((arr?.length > 0 && this.type === 'add') || (arr?.length > 1)) {
+        const message = this.$store.getters['i18n/t']('virtualMachine.validation.repeat', { name: 'Network' });
+
+        callback(new Error(message));
+      } else if (value.length > 20) {
+        const message = this.$store.getters['i18n/t']('validation.custom.tooLongName', { max: 20 });
+
+        callback(new Error(message));
+      } else {
+        callback();
+      }
+    };
+
     return {
       rows:       clone(this.value),
       type:       'add',
       rowIndex:   0,
       errors:     [],
-      currentRow: {}
+      currentRow: {},
+      rules:      {
+        name:      [
+          { required: true, trigger: 'blur' },
+          { validator: validateName, trigger: 'change' }
+        ],
+        networkName:  [{ required: true }],
+        macAddress:   [{ validator: this.validateMac, trigger: 'change' }],
+      },
     };
   },
 
@@ -202,23 +224,17 @@ export default {
       };
     },
 
+    validateRules() {
+      this.$refs['ruleForm'].validate((valid) => {
+        if (valid) {
+          this.$refs.modal.passValidate = true;
+        } else {
+          this.$refs.modal.passValidate = false;
+        }
+      });
+    },
+
     validateError() {
-      if (!this.currentRow.name) {
-        return this.getInvalidMsg('Name');
-      }
-
-      if (!this.currentRow.model) {
-        return this.getInvalidMsg('Model');
-      }
-
-      if (!this.currentRow.networkName) {
-        return this.getInvalidMsg('Network Name');
-      }
-
-      if (!this.currentRow.type) {
-        return this.getInvalidMsg('Type');
-      }
-
       const portsValidater = this.validatePorts();
 
       if (!portsValidater.status) {
@@ -229,22 +245,23 @@ export default {
         return this.getInvalidMsg('Port Number');
       }
 
-      this.validateName(this.currentRow.name);
-      this.validateMac(this.currentRow.macAddress);
-
       if (!this.errors.length > 0) {
         this.$set(this, 'errors', []);
       }
     },
 
-    validateMac(value) {
+    validateMac(rule, value, callback) {
       if (this.currentRow.networkName === 'Pod Network' || !value) {
+        callback();
+
         return;
       }
       if (!/^[A-F0-9]{2}(-[A-F0-9]{2}){5}$|^[A-F0-9]{2}(:[A-F0-9]{2}){5}$/.test(value)) {
-        this.errors.splice(0, 1, 'Invalid MAC address format.');
+        const message = 'Invalid MAC address format.';
+
+        callback(new Error(message));
       } else {
-        this.$set(this, 'errors', []);
+        callback();
       }
     },
 
@@ -272,24 +289,7 @@ export default {
 
     getInvalidMsg(key) {
       this.errors.splice(0, 1, this.$store.getters['i18n/t']('validation.required', { key }));
-    },
-
-    validateName(name) {
-      const arr = _.filter(this.rows, (o, index) => {
-        return name === o.name;
-      });
-
-      if ((arr?.length > 0 && this.type === 'add') || (arr?.length > 1)) {
-        this.errors.splice(0, 1, 'network with this name already exists!.');
-      } else if (name.length > 20) {
-        const message = this.$store.getters['i18n/t']('validation.custom.tooLongName', { max: 20 });
-
-        this.$set(this.currentRow, 'name', name.substr(0, 20));
-        this.errors.splice(0, 1, message);
-      } else {
-        this.errors.splice(0, 1);
-      }
-    },
+    }
   }
 };
 </script>
@@ -297,6 +297,7 @@ export default {
 <template>
   <div>
     <VMModal
+      ref="modal"
       :row-actions="rowActions"
       modal-name="network"
       :title="type === 'add' ? 'Add Network Interface' : 'Edit Network Interface'"
@@ -307,69 +308,40 @@ export default {
       @update:cancel="beforeCancel"
       @update:add="updateAdd"
       @update:index="updateIndex"
-      @validateError="validateError"
+      @validateRules="validateRules"
     >
       <template v-slot:content>
-        <LabeledInput
-          v-model="currentRow.name"
-          label="Name"
-          class="mb-20"
-          required
-          @input="validateName"
-        />
+        <a-form-model ref="ruleForm" :model="currentRow" :rules="rules" :label-col="{ span: 4 }" :wrapper-col="{ span: 20 }">
+          <a-form-model-item label="Name" prop="name">
+            <a-input v-model="currentRow.name" />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-model="currentRow.model"
-          label="Model"
-          :options="modelOption"
-          class="mb-20"
-          required
-        />
+          <a-form-model-item label="Model">
+            <a-select
+              v-model="currentRow.model"
+              :options="modelOption"
+            />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-model="currentRow.networkName"
-          label="Network"
-          :options="networkOption"
-          class="mb-20"
-          required
-        />
+          <a-form-model-item label="Network" prop="networkName">
+            <a-select v-model="currentRow.networkName" :options="networkOption" />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-model="currentRow.type"
-          label="Type"
-          :options="typeOpton"
-          class="mb-20"
-          required
-        />
+          <a-form-model-item label="Type">
+            <a-select v-model="currentRow.type" :options="typeOpton" />
+          </a-form-model-item>
 
-        <LabeledInput
-          v-if="!isMasquerade"
-          v-model="currentRow.macAddress"
-          class="labeled-input--tooltip"
-          @input="validateMac"
-        >
-          <template v-slot:label>
-            <div>
-              <span class="label">Mac Address</span>
-              <el-tooltip placement="top" effect="dark">
-                <div slot="content">
-                  Protip: MAC address as seen inside the guest system.
-                </div>
-                <span><i class="el-icon-info"></i></span>
-              </el-tooltip>
-            </div>
-          </template>
-        </LabeledInput>
+          <a-form-model-item v-if="!isMasquerade" label="Mac Address" prop="macAddress">
+            <a-input v-model="currentRow.macAddress">
+              <a-tooltip slot="suffix" title="Protip: MAC address as seen inside the guest system.">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </a-input>
+          </a-form-model-item>
 
-        <PortInputGroup v-if="currentRow.type === 'masquerade'" v-model="currentRow" />
+          <PortInputGroup v-if="currentRow.type === 'masquerade'" v-model="currentRow" />
+        </a-form-model>
       </template>
     </VMModal>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.tip {
-  font-size: 13px;
-  font-style: italic;
-}
-</style>

@@ -1,9 +1,9 @@
 @font-face {
-  font-family: 'icons';
+  font-family: '#{$icomoon-font-family}';
   src:
-    url('fonts/icons.ttf?axcony') format('truetype'),
-    url('fonts/icons.woff?axcony') format('woff'),
-    url('fonts/icons.svg?axcony#icons') format('svg');
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?axcony') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?axcony') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?axcony##{$icomoon-font-family}') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -11,7 +11,7 @@
 
 .icon {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: 'icons' !important;
+  font-family: '#{$icomoon-font-family}' !important;
   speak: never;
   font-style: normal;
   font-weight: normal;
@@ -24,159 +24,219 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-minus:before {
-  content: "\e91d";
+/* .iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} */
+
+.icon-fill-pause:before {
+  content: "\e78e";
 }
-.icon-plus:before {
-  content: "\e91e";
+
+.icon-sort2:before {
+  content: "\e839";
 }
-.icon-circle-plus:before {
-  content: "\e91f";
-}
-.icon-file:before {
-  content: "\e900";
-}
-.icon-logging:before {
-  content: "\e92e";
-}
-.icon-folder:before {
-  content: "\e901";
-}
-.icon-list-flat:before {
-  content: "\e902";
-}
-.icon-list-grouped:before {
-  content: "\e903";
-}
-.icon-close:before {
-  content: "\e904";
-}
-.icon-x:before {
-  content: "\e904";
-}
-.icon-checkmark:before {
-  content: "\e91b";
-}
-.icon-warning:before {
-  content: "\e91c";
-}
-.icon-info:before {
-  content: "\e905";
-}
-.icon-error:before {
-  content: "\e914";
-}
-.icon-chevron-beginning:before {
-  content: "\e927";
-}
-.icon-chevron-end:before {
-  content: "\e928";
-}
-.icon-chevron-right:before {
-  content: "\e906";
-}
-.icon-chevron-left:before {
-  content: "\e907";
-}
-.icon-chevron-down:before {
-  content: "\e908";
-}
-.icon-chevron-up:before {
-  content: "\e909";
-}
-.icon-spinner:before {
-  content: "\e90a";
-}
-.icon-external-link:before {
-  content: "\e90b";
-}
-.icon-download:before {
-  content: "\e90c";
-}
-.icon-upload:before {
-  content: "\e920";
-}
-.icon-copy:before {
-  content: "\e90d";
-}
-.icon-edit:before {
-  content: "\e90e";
-}
-.icon-trash:before {
-  content: "\e90f";
-}
-.icon-delete:before {
-  content: "\e90f";
-}
-.icon-gear:before {
-  content: "\e910";
-}
-.icon-globe:before {
-  content: "\e924";
-}
-.icon-search:before {
-  content: "\e911";
-}
-.icon-actions:before {
-  content: "\e912";
-}
-.icon-vertical-ellipsis:before {
-  content: "\e912";
-}
-.icon-dot-half:before {
-  content: "\e913";
-}
-.icon-dot-open:before {
-  content: "\e915";
-}
-.icon-dot:before {
-  content: "\e916";
-}
-.icon-star-open:before {
-  content: "\e925";
-}
-.icon-star:before {
-  content: "\e926";
-}
-.icon-user:before {
-  content: "\e917";
-}
-.icon-sort-down:before {
-  content: "\e918";
-}
-.icon-sort-up:before {
-  content: "\e919";
-}
-.icon-sort:before {
-  content: "\e91a";
-}
-.icon-terminal:before {
-  content: "\e923";
-}
-.icon-pause:before {
-  content: "\e921";
-}
+
 .icon-play:before {
-  content: "\e929";
+  content: "\e613";
 }
-.icon-docker:before {
-  content: "\e92a";
+
+.icon-chevron-down:before {
+  content: "\e7b2";
 }
-.icon-github:before {
-  content: "\e922";
+
+.icon-terminal:before {
+  content: "\edff";
 }
-.icon-istio:before {
-  content: "\e92f";
+
+.icon-pause:before {
+  content: "\e647";
 }
-.icon-rio:before {
-  content: "\e930";
+
+.icon-edit:before {
+  content: "\e61b";
 }
-.icon-marketplace:before {
-  content: "\e92b";
+
+.icon-trash:before {
+  content: "\e620";
 }
-.icon-compass:before {
-  content: "\e92c";
+
+.icon-copy:before {
+  content: "\e606";
 }
-.icon-cluster:before {
-  content: "\e92d";
+
+.icon-gear:before {
+  content: "\e629";
 }
+
+.icon-dot:before {
+  content: "\e6a3";
+}
+
+.icon-delete:before {
+  content: "\e601";
+}
+
+.icon-star-open:before {
+  content: "\eebe";
+}
+
+.icon-user:before {
+  content: "\e602";
+}
+
+.icon-external-link:before {
+  content: "\e6d9";
+}
+
+.icon-star:before {
+  content: "\e607";
+}
+
+.icon-download:before {
+  content: "\e74d";
+}
+
+.icon-spinner:before {
+  content: "\e756";
+}
+
+.icon-upload:before {
+  content: "\e76b";
+}
+
+.icon-search:before {
+  content: "\e7b3";
+}
+
+.icon-vertical-ellipsis:before {
+  content: "\e604";
+}
+
+.icon-dot-open:before {
+  content: "\e67e";
+}
+
+.icon-dot-half:before {
+  content: "\e60e";
+}
+
+.icon--delete:before {
+  content: "\efdd";
+}
+
+.icon-actions:before {
+  content: "\efde";
+}
+
+.icon-list:before {
+  content: "\e63c";
+}
+
+.icon-folder:before {
+  content: "\efdb";
+}
+
+.icon-chevron-beginning:before {
+  content: "\e76c";
+}
+
+.icon-error:before {
+  content: "\e62e";
+}
+
+.icon-list-grouped:before {
+  content: "\e81d";
+}
+
+.icon-fill-play:before {
+  content: "\e72f";
+}
+
+.icon-fill-info:before {
+  content: "\e730";
+}
+
+.icon-fill-stop:before {
+  content: "\e738";
+}
+
+.icon-chevron-right:before {
+  content: "\e743";
+}
+
+.icon-chevron-left:before {
+  content: "\e744";
+}
+
+.icon-chevron-up:before {
+  content: "\e745";
+}
+
+.icon-list-flat:before {
+  content: "\e747";
+}
+
+.icon-x:before {
+  content: "\e748";
+}
+
+.icon-code:before {
+  content: "\e749";
+}
+
+.icon-info:before {
+  content: "\e75e";
+}
+
+.icon-checkmark:before {
+  content: "\e763";
+}
+
+.icon-warning:before {
+  content: "\e76d";
+}
+
+.icon-circle-plus:before {
+  content: "\e641";
+}
+
+.icon-logging:before {
+  content: "\e69b";
+}
+
+.icon-file:before {
+  content: "\e66a";
+}
+
+.icon-chevron-end:before {
+  content: "\e600";
+}
+
+.icon-close:before {
+  content: "\efdc";
+}
+
+.icon-plus:before {
+  content: "\e664";
+}
+
+.icon-minus:before {
+  content: "\e67a";
+}
+
+.icon-sort-up:before {
+  content: "\e68a";
+}
+
+.icon-sort-down:before {
+  content: "\e68b";
+}
+
+.icon-sort:before {
+  content: "\e694";
+}
+

@@ -1,19 +1,12 @@
 <script>
 import _ from 'lodash';
-import { mapState, mapGetters } from 'vuex';
-import moment from 'moment';
-import randomstring from 'randomstring';
+import { mapGetters } from 'vuex';
 import { cleanForNew } from '@/plugins/steve/normalize';
-import { safeLoad, safeDump } from 'js-yaml';
+import { safeLoad } from 'js-yaml';
 import Footer from '@/components/form/Footer';
-import Collapse from '@/components/Collapse';
-import RadioGroup from '@/components/form/RadioGroup';
-import Checkbox from '@/components/form/Checkbox';
 import AddSSHKey from '@/components/form/AddSSHKey';
 import DiskModal from '@/components/form/DiskModal';
-import LabeledInput from '@/components/form/LabeledInput';
 import NetworkModal from '@/components/form/NetworkModal';
-import LabeledSelect from '@/components/form/LabeledSelect';
 import TextAreaAutoGrow from '@/components/form/TextAreaAutoGrow';
 import { VM_TEMPLATE, VM, IMAGE } from '@/config/types';
 import MemoryUnit from '@/components/form/MemoryUnit';
@@ -35,11 +28,6 @@ const baseSpec = {
           threads: 1
         },
         devices: {
-          inputs: [{
-            bus:  'usb',
-            name: 'tablet',
-            type: 'tablet'
-          }],
           interfaces: [{
             masquerade: {},
             model:      'virtio',
@@ -64,18 +52,13 @@ export default {
 
   components: {
     Footer,
-    Checkbox,
-    Collapse,
     DiskModal,
     MemoryUnit,
-    RadioGroup,
     AddSSHKey,
     ChooseImage,
     CloudConfig,
     NetworkModal,
     NameDescriptionCount,
-    LabeledInput,
-    LabeledSelect,
   },
 
   mixins: [CreateEditView, VM_MIXIN],
@@ -98,18 +81,18 @@ export default {
     }
 
     return {
-      baseSpec,
-      isSingle:             true,
-      count:                1,
-      realHostname:         '',
+      isSingle:              true,
+      count:                 1,
+      realHostname:          '',
       spec,
-      templateName:         '',
-      templateVersion:      '',
-      namespace:            'default',
-      isRunning:            true,
-      useTemplate:          false,
-      pageType:             'vm',
+      templateName:          '',
+      templateVersion:       '',
+      namespace:             'default',
+      isRunning:             true,
+      useTemplate:           false,
+      pageType:              'vm',
       isLanuchFromTemplate:     false,
+      isUseMouseEnhancement:    false
     };
   },
 
@@ -172,6 +155,13 @@ export default {
       }
     },
 
+    modeOption() {
+      return [
+        { label: 'Single Instance', value: true },
+        { label: 'Multiple Instance', value: false }
+      ];
+    },
+
     nameLabel() {
       return this.isSingle ? 'Name' : 'Prefix Name';
     },
@@ -223,13 +213,25 @@ export default {
       this.isLanuchFromTemplate = false;
     },
     useTemplate(neu) {
-      if (neu === false) {
-        const spec = _.cloneDeep(this.baseSpec);
+      if (!neu) {
+        const spec = _.cloneDeep(baseSpec);
 
         this.$set(this, 'spec', spec);
         this.$set(this.value, 'spec', spec);
-        this.templateName = '';
-        this.templateVersion = '';
+        this.templateName = this.templateVersion = '';
+      }
+    },
+    isUseMouseEnhancement(neu) {
+      if (neu) {
+        Object.assign(this.spec.template.spec.domain.devices, {
+          inputs: [{
+            bus:  'usb',
+            name: 'tablet',
+            type: 'tablet'
+          }]
+        });
+      } else {
+        this.$delete(this.spec.template.spec.domain.devices, 'inputs');
       }
     }
   },
@@ -321,29 +323,15 @@ export default {
       if (value > 100) {
         this.$set(this.spec.template.spec.domain.cpu, 'cores', 100);
       }
-    },
-    validataCount(count) {
-      if (count > 10) {
-        this.$set(this, 'count', 10);
-      }
     }
   },
 };
 </script>
 
 <template>
-  <el-card class="box-card">
-    <div id="vm">
-      <div class="row mb-20">
-        <div class="col span-12">
-          <RadioGroup
-            v-model="isSingle"
-            :options="[true,false]"
-            :labels="['Single Instance', 'Multiple Instance']"
-            :mode="mode"
-          />
-        </div>
-      </div>
+  <a-card>
+    <a-form-model layout="vertical">
+      <a-radio-group v-model="isSingle" class="mb-15" :options="modeOption" />
 
       <NameDescriptionCount
         v-model="value"
@@ -353,54 +341,58 @@ export default {
         :extra-columns="['type']"
       >
         <template v-slot:type>
-          <LabeledInput
-            v-if="!isSingle"
-            v-model.number="count"
-            v-int-number
-            type="number"
-            min="1"
-            label="count"
-            required
-            @input="validataCount"
-          />
+          <a-form-item label="Count" required>
+            <a-input-number
+              v-if="!isSingle"
+              v-model="count"
+              style="width: 100%"
+              :min="1"
+              :max="10"
+            />
+          </a-form-item>
         </template>
       </NameDescriptionCount>
 
-      <div class="min-spacer"></div>
-      <Checkbox v-model="useTemplate" class="check" type="checkbox" label="Use VM Template:" />
+      <a-checkbox v-model="useTemplate" :class="{ 'mb-10': true, 'mb-20': !useTemplate }">
+        Use VM Template:
+      </a-checkbox>
 
-      <div v-if="useTemplate" class="row mb-20">
+      <div v-if="useTemplate" class="row">
         <div class="col span-6">
-          <LabeledSelect v-model="templateName" label="template" :options="templateOption" />
+          <a-form-model-item label="template">
+            <a-select
+              v-model="templateName"
+              style="width: 100%"
+              :options="templateOption"
+            >
+            </a-select>
+          </a-form-model-item>
         </div>
 
         <div class="col span-6">
-          <LabeledSelect v-model="templateVersion" label="version" :options="versionOption" />
+          <a-form-model-item label="version">
+            <a-select
+              v-model="templateVersion"
+              style="width: 100%"
+              :options="versionOption"
+            >
+            </a-select>
+          </a-form-model-item>
         </div>
       </div>
 
-      <div class="spacer"></div>
-
-      <ChooseImage v-model="imageName" />
-
-      <div class="spacer"></div>
+      <ChooseImage v-model="imageName" class="mb-15" />
 
       <h2>CPU & Memory:</h2>
       <div class="row">
         <div class="col span-6">
-          <LabeledInput
-            v-model.number="spec.template.spec.domain.cpu.cores"
-            v-int-number
-            min="1"
-            type="number"
-            label="CPU (core)"
-            required
-            @input="validateMax"
-          />
+          <a-form-model-item label="CPU (core)" required>
+            <a-input-number v-model="spec.template.spec.domain.cpu.cores" style="width: 100%" :min="1" :max="100" />
+          </a-form-model-item>
         </div>
 
         <div class="col span-6">
-          <MemoryUnit v-model="memory" value-name="Memory" :value-col="8" :unit-col="4" />
+          <MemoryUnit v-model="memory" label="Memory" :value-col="8" :unit-col="4" />
         </div>
       </div>
 
@@ -421,51 +413,34 @@ export default {
 
       <div class="spacer"></div>
 
-      <Collapse :open.sync="showCloudInit" title="Advanced Details">
-        <LabeledInput v-model="hostname" class="labeled-input--tooltip mb-20" required placeholder="default to the virtual machine name.">
-          <template v-slot:label>
-            <div>
-              <span class="label">{{ hostnameLabel }}</span>
-              <el-tooltip v-if="isCreate" placement="top" effect="dark">
-                <div slot="content">
-                  Give an identifying name you will remember them by. Your hostname name can only contain alphanumeric characters, dashes.
-                </div>
-                <span><i class="el-icon-info"></i></span>
-              </el-tooltip>
-            </div>
-          </template>
-        </LabeledInput>
+      <a-collapse class="mb-10">
+        <a-collapse-panel key="1" header="Advanced Details">
+          <a-form-model-item :label="hostnameLabel">
+            <a-input v-model="hostname" placeholder="default to the virtual machine name.">
+              <a-tooltip slot="suffix" title="Give an identifying name you will remember them by. Your hostname name can only contain alphanumeric characters, dashes.">
+                <a-icon type="info-circle" style="color: rgba(0,0,0,.45)" />
+              </a-tooltip>
+            </a-input>
+          </a-form-model-item>
 
-        <CloudConfig :user-script="userScript" :network-script="networkScript" @updateCloudConfig="updateCloudConfig" />
-      </Collapse>
+          <CloudConfig :user-script="userScript" :network-script="networkScript" class="mb-10" @updateCloudConfig="updateCloudConfig" />
 
-      <div class="spacer"></div>
+          <a-checkbox v-model="isUseMouseEnhancement" class="mb-10">
+            Use mouse enhancement
+          </a-checkbox>
+        </a-collapse-panel>
+      </a-collapse>
 
-      <div class="spacer"></div>
-      <Checkbox v-model="isRunning" class="check" type="checkbox" label="Start virtual machine on creation" />
+      <a-checkbox v-model="isRunning" class="mb-10">
+        Start virtual machine on creation
+      </a-checkbox>
       <Footer :mode="mode" :errors="errors" @save="saveVM" @done="done" />
-    </div>
-  </el-card>
+    </a-form-model>
+  </a-card>
 </template>
 
 <style lang="scss">
 #vm {
-  .radio-group {
-    display: flex;
-
-    .radio-container {
-      margin-right: 30px;
-    }
-  }
-
-  .tip {
-    color: #8e8e92;
-  }
-
-  .label {
-    color: var(--input-label);
-  }
-
   .sortable-table {
     border: 1px solid var(--input-border);
     border-radius: calc(3 * var(--border-radius));

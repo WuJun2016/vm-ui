@@ -1,24 +1,16 @@
 <script>
 import _ from 'lodash';
-import randomstring from 'randomstring';
 import VMModal from '@/components/form/VMModal';
-import LabeledInput from '@/components/form/LabeledInput';
-import LabeledSelect from '@/components/form/LabeledSelect';
-import Collapse from '@/components/Collapse';
+import MemoryUnit from '@/components/form/MemoryUnit';
 import { clone } from '@/utils/object';
 import { sortBy } from '@/utils/sort';
 import { SOURCE_TYPE, InterfaceOption } from '@/config/map';
-import MemoryUnit from '@/components/form/MemoryUnit';
 import { NAMESPACE, DATA_VOLUME, STORAGE_CLASS, IMAGE } from '@/config/types';
 
+const SUCCEEDED = 'Succeeded';
+
 export default {
-  components: {
-    VMModal,
-    Collapse,
-    MemoryUnit,
-    LabeledInput,
-    LabeledSelect
-  },
+  components: { VMModal, MemoryUnit },
 
   props:      {
     value: {
@@ -50,6 +42,24 @@ export default {
   },
 
   data() {
+    const validateName = (rule, value, callback) => {
+      const arr = _.filter(this.rows, (o, index) => {
+        return value === o.name;
+      });
+
+      if ((arr?.length > 0 && this.type === 'add') || (arr?.length > 1)) {
+        const message = this.$store.getters['i18n/t']('virtualMachine.validation.repeat', { name: 'Disk' });
+
+        callback(new Error(message));
+      } else if (value.length > 20) {
+        const message = this.$store.getters['i18n/t']('validation.custom.tooLongName', { max: 20 });
+
+        callback(new Error(message));
+      } else {
+        callback();
+      }
+    };
+
     return {
       rows:           clone(this.value),
       type:           'add',
@@ -57,7 +67,25 @@ export default {
       rowIdx:         0,
       currentRow:     {},
       pvcs:           [],
-      enableAdvanced: false
+      enableAdvanced: false,
+      rules:          {
+        source:           [{ required: true }],
+        image:            [{
+          required: true, message: 'Please select Image', trigger: 'blur'
+        }],
+        type:             [{ required: true }],
+        name:             [{
+          required: true, message: 'Please input Name', trigger: 'blur'
+        },
+        { validator: validateName, trigger: 'change' }],
+        pvcName:          [{ required: true }],
+        container:        [{ required: true }],
+        bus:              [{ required: true }],
+        size:             [{ required: true }],
+        storageClassName: [{ required: true }],
+        volumeMode:       [{ required: true }],
+        accessMode:       [{ required: true }]
+      },
     };
   },
 
@@ -78,13 +106,13 @@ export default {
       return this.currentRow.source === SOURCE_TYPE.CONTAINER_DISK;
     },
 
-    pvcOption() {
+    dataVolumeOption() {
       const choices = this.$store.getters['cluster/all'](DATA_VOLUME);
 
       return sortBy(
         choices
           .filter( (obj) => {
-            return obj.metadata.namespace === this.namespace && obj.phaseStatus === 'Succeeded';
+            return obj.metadata.namespace === this.namespace && obj.phaseStatus === SUCCEEDED; // Todo: validate
           })
           .map((obj) => {
             return {
@@ -116,23 +144,19 @@ export default {
         name:  'name',
         label: 'Name',
         value: 'name',
-      },
-      {
+      }, {
         name:  'Source',
         label: 'Source',
         value: 'source',
-      },
-      {
-        name:      'Size',
-        label:     'Size',
-        value:     'size',
-      },
-      {
+      }, {
+        name:  'Size',
+        label: 'Size',
+        value: 'size',
+      }, {
         name:  'Interface',
         label: 'Bus',
         value: 'bus',
-      },
-      {
+      }, {
         name:  'Storage Class',
         label: 'Storage Class',
         value: 'storageClassName',
@@ -142,7 +166,7 @@ export default {
         value: 'bootOrder',
       }];
 
-      if (this.isEjectCdrow) {
+      if (this.isEjectCdrow) { // Todo: pass ref to add
         out.unshift({
           name:      '',
           label:     '',
@@ -198,12 +222,15 @@ export default {
     imagesOption() {
       const choise = this.$store.getters['cluster/all'](IMAGE);
 
-      return choise.map( (I) => {
-        return {
-          label: I.spec.displayName,
-          value: I.spec.displayName
-        };
-      });
+      return sortBy(
+        choise.map( (I) => {
+          return {
+            label: I.spec.displayName,
+            value: I.spec.displayName
+          };
+        }),
+        'label'
+      );
     },
 
     accessModeOption() {
@@ -220,18 +247,18 @@ export default {
     },
 
     bootOrderOption() {
-      const baseOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const baseOrder = Array.from(Array(10), (v, k) => k + 1);
 
       _.remove(baseOrder, (n) => {
-        return this.choosedOrder.includes(n);
+        return this.rows.map( R => R.bootOrder ).includes(n);
       });
-      baseOrder.unshift('-');
 
-      return baseOrder;
-    },
-
-    choosedOrder() {
-      return this.rows.map( R => R.bootOrder );
+      return baseOrder.map( (O) => {
+        return {
+          label: O,
+          value: O
+        };
+      });
     },
 
     imageRequired() {
@@ -261,21 +288,16 @@ export default {
         return;
       }
 
-      this.currentRow.accessModes = pvcResource?.spec?.pvc?.accessModes[0];
       this.currentRow.size = pvcResource?.spec?.pvc?.resources?.requests?.storage;
-      this.currentRow.storageClassName = pvcResource?.spec?.pvc?.storageClassName;
       this.currentRow.volumeMode = pvcResource?.spec?.pvc?.volumeMode;
+      this.currentRow.accessModes = pvcResource?.spec?.pvc?.accessModes[0];
+      this.currentRow.storageClassName = pvcResource?.spec?.pvc?.storageClassName;
     }
   },
 
   methods: {
-    updateBootOrder(neu) {
-      if (neu === '-') {
-        this.currentRow.bootOrder = '';
-      }
-    },
     beforeCancel() {
-      this.$set(this, 'errors', []);
+      this.$refs.ruleForm.resetFields();
     },
 
     updateIndex(idx, type) {
@@ -300,10 +322,6 @@ export default {
       const volumes = [];
       const disks = [];
 
-      if (this.errors.length > 0) {
-        return;
-      }
-
       if (this.type === 'add') {
         this.rows.splice(this.rowIdx, 0, this.currentRow);
       } else if (this.type === 'delete') {
@@ -322,47 +340,14 @@ export default {
       this.$emit('input', this.rows);
     },
 
-    validateName(name) {
-      const arr = _.filter(this.rows, (o, index) => {
-        return name === o.name;
+    validateRules() {
+      this.$refs['ruleForm'].validate((valid) => {
+        if (valid) {
+          this.$refs.modal.passValidate = true;
+        } else {
+          this.$refs.modal.passValidate = false;
+        }
       });
-
-      if ((arr?.length > 0 && this.type === 'add') || (arr?.length > 1)) {
-        this.errors.splice(0, 1, 'Disk with this name already exists!.');
-      } else if (name.length > 20) {
-        const message = this.$store.getters['i18n/t']('validation.custom.tooLongName', { max: 20 });
-
-        this.$set(this.currentRow, 'name', name.substr(0, 20));
-        this.errors.splice(0, 1, message);
-      } else {
-        this.errors.splice(0, 1);
-      }
-    },
-
-    validateError() {
-      let hasError = false;
-
-      if (!this.currentRow.source) {
-        hasError = true;
-      }
-
-      if (this.isBlank) {
-        if (!this.currentRow.size || !this.currentRow.storageClassName || !this.currentRow.name || !this.currentRow.bus) {
-          hasError = true;
-        }
-      }
-
-      if (this.isContainerDisk) {
-        if (!this.currentRow.name || !this.currentRow.container || !this.currentRow.bus) {
-          hasError = true;
-        }
-      }
-
-      if (hasError) {
-        this.errors.splice(0, 1, 'Please fill in all required fields.');
-      } else {
-        this.validateName(this.currentRow.name);
-      }
     }
   }
 };
@@ -371,8 +356,8 @@ export default {
 <template>
   <div>
     <VMModal
+      ref="modal"
       :row-actions="rowActions"
-      modal-name="disk"
       :title="type === 'add' ? 'Add Disk' : 'Edit Disk'"
       :rows="rows"
       button-text="Add Disk"
@@ -381,92 +366,80 @@ export default {
       @update:add="updateAdd"
       @update:index="updateIndex"
       @update:cancel="beforeCancel"
-      @validateError="validateError"
+      @validateRules="validateRules"
     >
       <template v-slot:content>
-        <LabeledSelect
-          v-model="currentRow.source"
-          :options="sourceOption"
-          :disabled="currentRow.disableDelete"
-          label="Source"
-          class="mb-20"
-          required
-        />
+        <a-form-model ref="ruleForm" :model="currentRow" :rules="rules" :label-col="{ span: 5 }" :wrapper-col="{ span: 19 }">
+          <a-form-model-item label="Source" prop="source">
+            <a-select
+              v-model="currentRow.source"
+              :options="sourceOption"
+              :disabled="currentRow.disableDelete"
+            />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-if="isImage"
-          v-model="currentRow.image"
-          class="mb-20"
-          :disabled="currentRow.disableDelete"
-          :label="imageLabel"
-          :options="imagesOption"
-          :required="imageRequired"
-        />
+          <a-form-model-item v-if="isImage" :label="imageLabel" prop="image">
+            <a-select
+              v-model="currentRow.image"
+              :options="imagesOption"
+              :disabled="currentRow.disableDelete"
+            />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-model="currentRow.type"
-          :options="typeOption"
-          label="Type"
-          class="mb-20"
-          required
-        />
+          <a-form-model-item label="Type" prop="type">
+            <a-select
+              v-model="currentRow.type"
+              :options="typeOption"
+            />
+          </a-form-model-item>
 
-        <LabeledInput v-if="isContainerDisk" v-model="currentRow.container" label="Docker Image" class="mb-20" required />
+          <a-form-model-item v-if="isContainerDisk" label="Docker Image" prop="container">
+            <a-input v-model="currentRow.container" />
+          </a-form-model-item>
 
-        <LabeledInput v-model="currentRow.name" label="Name" class="mb-20" required @input="validateName" />
+          <a-form-model-item label="Name" prop="name">
+            <a-input v-model="currentRow.name" />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-if="isAttachVolume"
-          v-model="currentRow.pvcName"
-          label="Volume"
-          class="mb-20"
-          :options="pvcOption"
-          required
-        />
+          <a-form-model-item v-if="isAttachVolume" label="Volume" prop="pvcName">
+            <a-select
+              v-model="currentRow.pvcName"
+              :options="dataVolumeOption"
+            />
+          </a-form-model-item>
 
-        <MemoryUnit
-          v-if="!isContainerDisk"
-          v-model="currentRow.size"
-          :is-disabled="isAttachVolume"
-          value-name="Size"
-          class="mb-20"
-        />
+          <!-- <a-form-model-item v-if="!isContainerDisk" label="Size" prop="size"> -->
+          <MemoryUnit v-model="currentRow.size" :is-disabled="isAttachVolume" value-name="Size" />
+          <!-- </a-form-model-item> -->
 
-        <LabeledSelect
-          v-model="currentRow.bus"
-          label="Bus"
-          class="mb-20"
-          :disabled="isAttachVolume"
-          :options="InterfaceOption"
-          required
-        />
+          <a-form-model-item label="Bus" prop="bus">
+            <a-select v-model="currentRow.bus" :disabled="isAttachVolume" :options="InterfaceOption" />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-if="!isContainerDisk"
-          v-model="currentRow.storageClassName"
-          label="Storage Class"
-          :disabled="isAttachVolume"
-          class="mb-20"
-          :options="storageOption"
-          required
-        />
+          <a-form-model-item v-if="!isContainerDisk" label="Storage Class" prop="storageClassName">
+            <a-select v-model="currentRow.storageClassName" :disabled="isAttachVolume" :options="storageOption" />
+          </a-form-model-item>
 
-        <LabeledSelect
-          v-model="currentRow.bootOrder"
-          label="Boot Order"
-          class="mb-20"
-          :clearable="true"
-          :searchable="true"
-          :options="bootOrderOption"
-          @input="updateBootOrder"
-        />
+          <a-form-model-item label="Boot Order" prop="bootOrder">
+            <a-select
+              v-model="currentRow.bootOrder"
+              :options="bootOrderOption"
+              allow-clear
+            />
+          </a-form-model-item>
 
-        <Collapse v-if="!isContainerDisk" :open.sync="enableAdvanced">
-          <div v-if="enableAdvanced">
-            <LabeledSelect v-model="currentRow.volumeMode" :disabled="isAttachVolume" label="Volume Mode" class="mb-20" :options="volumeModeOption" />
-            <LabeledSelect v-model="currentRow.accessMode" :disabled="isAttachVolume" label="Access Mode" class="mb-20" :options="accessModeOption" />
-          </div>
-        </Collapse>
+          <a-collapse v-if="!isContainerDisk">
+            <a-collapse-panel key="1" header="Advanced Configuration">
+              <a-form-model-item label="Volume Mode" prop="volumeMode">
+                <a-select v-model="currentRow.volumeMode" :disabled="isAttachVolume" :options="volumeModeOption" />
+              </a-form-model-item>
+
+              <a-form-model-item label="Access Mode" prop="accessMode">
+                <a-select v-model="currentRow.accessMode" :disabled="isAttachVolume" :options="accessModeOption" />
+              </a-form-model-item>
+            </a-collapse-panel>
+          </a-collapse>
+        </a-form-model>
       </template>
     </VMModal>
   </div>

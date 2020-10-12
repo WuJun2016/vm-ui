@@ -87,13 +87,13 @@ export default {
   <div @input="update">
     <h3>Cloud Config</h3>
     <div class="mb-20">
-      <h4>
-        User Data:
-        <h5>
+      <div>
+        <span class="label">User Data:</span>
+        <i>
           You can specify user data to configure an instance or run a configuration script during launch. If you launch more than one instance at a time, the user data is available to all the instances in that reservation.
           <a target="_blank" href="https://cloudinit.readthedocs.io/en/latest/topics/examples.html">Learn more</a>
-        </h5>
-      </h4>
+        </i>
+      </div>
       <div class="resource-yaml">
         <YamlEditor
           ref="yamlUser"
@@ -106,13 +106,13 @@ export default {
     </div>
 
     <div>
-      <h4>
-        Network Data:
-        <h5>
+      <div>
+        <span class="label">Network Data:</span>
+        <i>
           The network-data configuration allows you to customize the instance’s networking interfaces by assigning subnet configuration, virtual device creation (bonds, bridges, vlans) routes and DNS configuration.
           <a target="_blank" href="https://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v1.html">Learn more</a>
-        </h5>
-      </h4>
+        </i>
+      </div>
 
       <div class="resource-yaml">
         <YamlEditor
@@ -128,6 +128,11 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+.label {
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 14px;
+}
+
 .resource-yaml {
   flex: 1;
   display: flex;

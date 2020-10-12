@@ -479,9 +479,6 @@ export default {
         }
       };
 
-      // if (!this.imageName) {
-      //   delete spec.dataVolumeTemplates;
-      // }
       if (this.pageType !== 'vm') {
         if (!this.imageName) {
           spec.dataVolumeTemplates[0].spec.source.http.url = TEMPORARY_VALUE

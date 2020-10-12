@@ -637,6 +637,10 @@ secret:
     password: Password
     domainName: Registry Domain Name
 
+virtualMachine:
+  validation:
+    repeat: '{name} with this name already exists!.'
+
 workload:
   detailTop:
     workload: Workload

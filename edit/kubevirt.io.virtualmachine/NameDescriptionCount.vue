@@ -8,7 +8,7 @@ import LabeledInput from '@/components/form/LabeledInput';
 import InputWithSelect from '@/components/form/InputWithSelect';
 
 export default {
-  components: { LabeledInput, InputWithSelect },
+  components: { InputWithSelect },
 
   props: {
     value: {
@@ -211,7 +211,7 @@ export default {
 
 <template>
   <div>
-    <div class="row mb-20">
+    <div class="row">
       <div :class="{col: true, 'span-6': true}">
         <slot name="namespace">
           <InputWithSelect
@@ -230,14 +230,16 @@ export default {
         </slot>
       </div>
       <div v-if="!hasExtra" :class="{col: true, 'span-6': true}">
-        <LabeledInput
-          key="description"
-          v-model="description"
-          label="Description"
-          :mode="mode"
-          :placeholder="descriptionPlaceholder"
-          :min-height="30"
-        />
+        <a-form-item label="Description">
+          <a-input
+            key="description"
+            v-model="description"
+            label="Description"
+            :mode="mode"
+            :placeholder="descriptionPlaceholder"
+            :min-height="30"
+          />
+        </a-form-item>
       </div>
       <div v-for="slot in extraColumns" v-else :key="slot" :class="{col: true, 'span-6': true}">
         <slot :name="slot">
@@ -247,14 +249,16 @@ export default {
 
     <div v-if="hasExtra" class="row">
       <div class="col span-12">
-        <LabeledInput
-          key="description"
-          v-model="description"
-          label="Description"
-          :mode="mode"
-          :placeholder="descriptionPlaceholder"
-          :min-height="30"
-        />
+        <a-form-item label="Description">
+          <a-input
+            key="description"
+            v-model="description"
+            label="Description"
+            :mode="mode"
+            :placeholder="descriptionPlaceholder"
+            :min-height="30"
+          />
+        </a-form-item>
       </div>
     </div>
   </div>

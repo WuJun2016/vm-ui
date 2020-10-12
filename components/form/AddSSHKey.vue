@@ -1,14 +1,10 @@
 <script>
-import LabeledInput from '@/components/form/LabeledInput';
 import Banner from '@/components/Banner';
 import { clone } from '@/utils/object';
 import { SSH } from '@/config/types';
 
 export default {
-  components: {
-    Banner,
-    LabeledInput
-  },
+  components: { Banner },
 
   props: {
     sshKey: {
@@ -16,7 +12,7 @@ export default {
       default: () => {
         return [];
       }
-    },
+    }
   },
 
   data() {
@@ -27,7 +23,17 @@ export default {
       searchKey:        '',
       errors:           [],
       isAll:            false,
-      checkAll:         false
+      checkAll:         false,
+      visible:          false,
+      rules:      {
+        sshName: [
+          { required: true, message: 'Name is required' },
+          { max: 63, message: this.$store.getters['i18n/t']('validation.custom.tooLongName', { max: 63 }) },
+        ],
+        publicKey: [
+          { required: true }
+        ]
+      },
     };
   },
 
@@ -64,15 +70,17 @@ export default {
 
   methods: {
     show() {
-      this.$modal.show('newSSH');
+      this.visible = true;
     },
 
     hide() {
-      this.$modal.hide('newSSH');
+      this.visible = false;
+      this.errors = [];
+      this.$refs.ruleForm.resetFields();
     },
 
-    handleCheckAllChange(val) {
-      this.checkedSsh = val ? this.sshList : [];
+    handleCheckAllChange(e) {
+      this.checkedSsh = e.target.checked ? this.sshList : [];
     },
 
     handleCheckedChange(value) {
@@ -81,55 +89,38 @@ export default {
       this.checkAll = checkedCount === this.sshList.length;
     },
 
-    async saveKey() {
+    saveKey() {
       this.errors = [];
-      if (!this.sshName || !this.publicKey) {
-        this.errors.push('Please fill in all required fields.');
 
-        return;
-      }
+      this.$refs.ruleForm.validate( async(valid) => {
+        if (valid) {
+          try {
+            const data = await this.$store.dispatch('cluster/request', {
+              method:  'POST',
+              headers: {
+                'content-type': 'application/json',
+                accept:         'application/json',
+              },
+              url:  `v1/${ SSH }`,
+              data: {
+                apiVersion: 'vm.cattle.io/v1alpha1',
+                kind:       'KeyPair',
+                metadata:   { name: this.sshName },
+                spec:       { publicKey: this.publicKey },
+                type:       SSH
+              },
+            });
 
-      if (this.sshName.length > 63) {
-        const message = this.$store.getters['i18n/t']('validation.custom.tooLongName', { max: 63 });
+            this.checkedSsh.push(this.sshName);
 
-        this.errors.push(message);
-
-        return;
-      }
-
-      const SSH = 'harvester.cattle.io.keypair';
-
-      try {
-        const data = await this.$store.dispatch('cluster/request', {
-          method:  'POST',
-          headers: {
-            'content-type': 'application/json',
-            accept:         'application/json',
-          },
-          url:  `v1/${ SSH }`,
-          data: {
-            apiVersion: 'vm.cattle.io/v1alpha1',
-            kind:       'KeyPair',
-            metadata:   { name: this.sshName },
-            spec:       { publicKey: this.publicKey },
-            type:       SSH
-          },
-        });
-
-        this.checkedSsh.push(this.sshName);
-
-        this.hide();
-      } catch (err) {
-        this.errors = [err.message];
-      }
-    },
-
-    addSSH() {
-      this.show();
-    },
-
-    cancelKey() {
-      this.hide();
+            this.hide();
+          } catch (err) {
+            this.errors = [err.message];
+          }
+        } else {
+          return false;
+        }
+      });
     },
 
     updateSSH(sshKey) {
@@ -142,82 +133,58 @@ export default {
 <template>
   <div>
     <div class="box mb-20">
-      <div class="row">
+      <div class="row mb-15">
         <div class="col span-4">
-          <input v-model="searchKey" placeholder="Search" />
+          <a-input v-model="searchKey" placeholder="Search" />
         </div>
       </div>
 
-      <div class="min-spacer"></div>
-
       <div class="keyLisk">
-        <el-checkbox v-model="checkAll" @change="handleCheckAllChange">
-          Select All
-        </el-checkbox>
-        <div style="margin: 15px 0;"></div>
-        <el-checkbox-group v-model="checkedSsh" @change="handleCheckedChange">
-          <el-checkbox v-for="item in filterSSHList" :key="item" :label="item">
-            {{ item }}
-          </el-checkbox>
-        </el-checkbox-group>
+        <div class="mb-15">
+          <a-checkbox v-model="checkAll" @change="handleCheckAllChange">
+            Select All
+          </a-checkbox>
+        </div>
+
+        <a-checkbox-group v-model="checkedSsh" :options="filterSSHList" @change="handleCheckedChange" />
       </div>
-      <el-button class="btn btn-sm mt-20" @click="addSSH">
+      <a-button class="mt-20" @click="show">
         New SSH Key
-      </el-button>
+      </a-button>
     </div>
 
-    <modal name="newSSH" height="auto">
-      <div class="sshModal">
-        <h2 class="mb-20">
-          Add Public SSH Key
-        </h2>
+    <a-modal
+      title="Add Public SSH Key"
+      :visible.sync="visible"
+      :mask-closable="false"
+      @ok="saveKey"
+      @cancel="hide"
+    >
+      <a-form-model ref="ruleForm" :model="this" :rules="rules" layout="vertical">
+        <a-form-model-item label="name" prop="sshName">
+          <a-input
+            v-model="sshName"
+            required
+          />
+        </a-form-model-item>
 
-        <LabeledInput
-          v-model="sshName"
-          label="Name"
-          class="mb-20"
-          required
-        />
-
-        <LabeledInput
-          v-model="publicKey"
-          type="multiline"
-          label="SSH-Key"
-          class="mb-20"
-          :min-height="160"
-          required
-        />
+        <a-form-model-item label="SSH-Key" prop="publicKey">
+          <a-textarea
+            v-model="publicKey"
+            required
+            :auto-size="{ minRows: 5, maxRows: 10 }"
+          />
+        </a-form-model-item>
 
         <div v-for="(err,idx) in errors" :key="idx">
           <Banner color="error" :label="err" />
         </div>
-
-        <div class="footer mb-20">
-          <button class="btn bg-primary btn-sm mr-20" @click="cancelKey">
-            Cancel
-          </button>
-          <button class="btn bg-primary btn-sm" @click="saveKey">
-            Save
-          </button>
-        </div>
-      </div>
-    </modal>
+      </a-form-model>
+    </a-modal>
   </div>
 </template>
 
 <style lang="scss">
-.sshModal {
-  padding: 20px;
-
-  .footer {
-    display: flex;
-    justify-content: flex-end;
-  }
-}
-.custom {
-  border: 1px solid var(--border);
-}
-
 .box {
   border: 1px solid var(--tabbed-container-bg);
   padding: 20px;
@@ -226,5 +193,8 @@ export default {
     display: flex;
     align-items: center;
   }
+}
+.lastItem {
+  margin-bottom: 0px;
 }
 </style>

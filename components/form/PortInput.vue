@@ -5,46 +5,23 @@ export default {
       type:     Object,
       required: true
     },
-    mode: {
-      type:     String,
-      required: false,
-      default:  'edit'
+    index: {
+      type:     Number,
+      required: true
     }
   },
-
-  data() {
-    return {
-      pattern:  /^([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$/,
-      oldValue: this.row.port
-    };
-  },
-
-  computed: {
-    isView() {
-      return this.mode === 'view';
-    }
-  },
-
-  methods: {
-    input(neu) {
-      if (this.pattern.test(neu) || neu === '') {
-        this.oldValue = neu;
-      } else {
-        this.row.port = this.oldValue;
-      }
-    }
-  }
 };
 </script>
 
 <template>
-  <input
-    v-model="row.port"
-    type="text"
-    placeholder="e.g. 8080"
-    :disabled="isView"
-    @input="input($event.target.value)"
+  <a-form-model-item
+    :prop="'ports.' + index + '.port'"
   >
+    <a-input-number
+      v-model="row.port"
+      :min="1"
+      :max="65535"
+      placeholder="e.g. 8080"
+    />
+  </a-form-model-item>
 </template>
-
-<style lang="scss"></style>

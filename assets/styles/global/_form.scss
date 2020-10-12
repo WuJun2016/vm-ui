@@ -20,7 +20,7 @@ TEXTAREA,
   font-size: 14px;
   background-color: var(--input-bg);
   border-radius: calc(var(--border-radius) * 2);
-  border: solid $outline-width var(--input-border);
+  // border: solid $outline-width var(--input-border);
   color: var(--input-text);
 
   &:not(.view) {
@@ -54,9 +54,9 @@ TEXTAREA,
     }
   }
 
-  LABEL {
-    margin: $spacing 0 $spacing 0;
-  }
+  // LABEL {
+  //   margin: $spacing 0 $spacing 0;
+  // }
 
   // &.no-resize::placeholder {
   //   padding-top: 8px;
@@ -71,7 +71,7 @@ FORM {
   LABEL {
     color: var(--input-label);
     display: inline-block;
-    margin: $spacing 0 $spacing 0;
+    // margin: $spacing 0 $spacing 0;
     font-size: 12px;
 
     &.radio, &.checkbox {

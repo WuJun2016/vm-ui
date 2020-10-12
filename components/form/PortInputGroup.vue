@@ -1,11 +1,7 @@
 <script>
 import { isArray } from '@/utils/array';
-import LabeledSelect from '@/components/form/LabeledSelect';
-import PortInput from '@/components/form/PortInput';
 
 export default {
-  components: { LabeledSelect, PortInput },
-
   props: {
     value: {
       type:     Object,
@@ -19,21 +15,21 @@ export default {
   },
 
   data() {
-    return {
-      protocolOption: [
-        {
-          label: 'TCP',
-          value: 'TCP'
-        },
-        {
-          label: 'UDP',
-          value: 'UDP'
-        }
-      ]
-    };
+    return {};
   },
 
   computed: {
+    protocolOption() {
+      return [
+        {
+          label: 'TCP',
+          value: 'TCP'
+        }, {
+          label: 'UDP',
+          value: 'UDP'
+        }
+      ];
+    },
     isView() {
       return this.mode === 'view';
     },
@@ -66,41 +62,79 @@ export default {
 
 <template>
   <div class="multiple-rows-input">
-    <span v-if="!isView" class="title">Add Ports</span>
-    <div class="label-group">
-      <label>
-        Port Name
-      </label>
-      <label>
-        Port Number <span class="required">*</span>
-      </label>
-      <label>
-        Protocol
-      </label>
-    </div>
+    <span class="title">Add Ports</span>
+
     <div v-for="(row, index) in value.ports" :key="index" class="display-rows">
-      <div class="input-group">
-        <input v-model="row.name" type="text" :placeholder="namePlaceholder" :disabled="isView" />
-        <PortInput :row="row" :mode="mode" />
-        <div>
-          <LabeledSelect
-            v-model="row.protocol"
-            :options="protocolOption"
-            :disabled="isView"
-          />
-        </div>
-      </div>
-      <button v-if="!isView" class="btn bg-primary btn-sm" @click="removeRows(index)">
-        <i class="el-icon-delete"></i>
-      </button>
+      <a-row>
+        <a-col :span="7">
+          <label>
+            Port Name
+          </label>
+          <a-form-model-item
+            :prop="'ports.' + index + '.name'"
+            :rules="{
+              required: true,
+              message: 'Name is required',
+            }"
+          >
+            <a-input v-model="row.name" type="text" :placeholder="namePlaceholder" :disabled="isView" />
+          </a-form-model-item>
+        </a-col>
+
+        <a-col :span="7">
+          <label>
+            Port Number <span class="required">*</span>
+          </label>
+          <a-form-model-item
+            :prop="'ports.' + index + '.port'"
+            :rules="{
+              required: true,
+              message: 'port is required',
+            }"
+          >
+            <a-input
+              v-model="row.port"
+              :min="1"
+              :max="65535"
+              placeholder="e.g. 8080"
+            />
+          </a-form-model-item>
+        </a-col>
+
+        <a-col :span="7">
+          <label>
+            Protocol
+          </label>
+          <a-form-model-item
+            :prop="'ports.' + index + '.protocol'"
+            :rules="{
+              required: true,
+              message: 'port is required',
+            }"
+          >
+            <a-select v-model="row.protocol" :options="protocolOption" />
+          </a-form-model-item>
+        </a-col>
+
+        <a-col :span="3">
+          <div class="center">
+            <a-button type="primary" icon="delete" size="small" @click="removeRows(index)" />
+          </div>
+        </a-col>
+      </a-row>
     </div>
-    <button v-if="!isView" class="btn bg-primary btn-sm" @click="addRows()">
+
+    <a-button type="primary" @click="addRows()">
       Add Port
-    </button>
+    </a-button>
   </div>
 </template>
 
 <style lang="scss">
+  .center {
+    margin-top: 28px
+  }
+
   .multiple-rows-input {
     .title {
       display: block;
@@ -112,35 +146,30 @@ export default {
       color: red;
     }
 
-    .display-rows {
-      display: grid;
-      grid-template-columns: auto 28px;
-      grid-column-gap: 15px;
-      align-items: center;
-      margin-bottom: 15px;
+    // .display-rows {
+    //   display: grid;
+    //   grid-template-columns: auto 28px;
+    //   grid-column-gap: 15px;
+    //   align-items: center;
+    //   margin-bottom: 15px;
+    // }
 
-      BUTTON {
-        padding: 8px;
-        height: 28px;
-      }
-    }
+    // .input-group, .label-group {
+    //   display: grid;
+    //   grid-template-columns: 2fr 2fr 1fr;
+    //   grid-column-gap: 15px;
+    //   padding-left: 5px;
+    // }
 
-    .input-group, .label-group {
-      display: grid;
-      grid-template-columns: 2fr 2fr 1fr;
-      grid-column-gap: 15px;
-      padding-left: 5px;
-    }
+    // .label-group {
+    //   grid-template-columns: 2fr 2fr 1fr 28px;
 
-    .label-group {
-      grid-template-columns: 2fr 2fr 1fr 28px;
-
-      LABEL {
-        display: block;
-        color: var(--input-label);
-        margin-bottom: 5px;
-      }
-    }
+    //   LABEL {
+    //     display: block;
+    //     color: var(--input-label);
+    //     margin-bottom: 5px;
+    //   }
+    // }
 
     .input-group {
       .labeled-select {

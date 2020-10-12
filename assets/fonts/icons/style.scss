@@ -1,5 +1,3 @@
-@import "variables";
-
 @font-face {
   font-family: '#{$icomoon-font-family}';
   src:
@@ -26,264 +24,219 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-minus {
-  &:before {
-    content: $icon-minus; 
-  }
+/* .iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} */
+
+.icon-fill-pause:before {
+  content: "\e78e";
 }
-.icon-plus {
-  &:before {
-    content: $icon-plus; 
-  }
+
+.icon-sort2:before {
+  content: "\e839";
 }
-.icon-circle-plus {
-  &:before {
-    content: $icon-circle-plus; 
-  }
+
+.icon-play:before {
+  content: "\e613";
 }
-.icon-file {
-  &:before {
-    content: $icon-file; 
-  }
+
+.icon-chevron-down:before {
+  content: "\e7b2";
 }
-.icon-logging {
-  &:before {
-    content: $icon-logging; 
-  }
+
+.icon-terminal:before {
+  content: "\edff";
 }
-.icon-folder {
-  &:before {
-    content: $icon-folder; 
-  }
+
+.icon-pause:before {
+  content: "\e647";
 }
-.icon-list-flat {
-  &:before {
-    content: $icon-list-flat; 
-  }
+
+.icon-edit:before {
+  content: "\e61b";
 }
-.icon-list-grouped {
-  &:before {
-    content: $icon-list-grouped; 
-  }
+
+.icon-trash:before {
+  content: "\e620";
 }
-.icon-close {
-  &:before {
-    content: $icon-close; 
-  }
+
+.icon-copy:before {
+  content: "\e606";
 }
-.icon-x {
-  &:before {
-    content: $icon-x; 
-  }
+
+.icon-gear:before {
+  content: "\e629";
 }
-.icon-checkmark {
-  &:before {
-    content: $icon-checkmark; 
-  }
+
+.icon-dot:before {
+  content: "\e6a3";
 }
-.icon-warning {
-  &:before {
-    content: $icon-warning; 
-  }
+
+.icon-delete:before {
+  content: "\e601";
 }
-.icon-info {
-  &:before {
-    content: $icon-info; 
-  }
+
+.icon-star-open:before {
+  content: "\eebe";
 }
-.icon-error {
-  &:before {
-    content: $icon-error; 
-  }
+
+.icon-user:before {
+  content: "\e602";
 }
-.icon-chevron-beginning {
-  &:before {
-    content: $icon-chevron-beginning; 
-  }
+
+.icon-external-link:before {
+  content: "\e6d9";
 }
-.icon-chevron-end {
-  &:before {
-    content: $icon-chevron-end; 
-  }
+
+.icon-star:before {
+  content: "\e607";
 }
-.icon-chevron-right {
-  &:before {
-    content: $icon-chevron-right; 
-  }
+
+.icon-download:before {
+  content: "\e74d";
 }
-.icon-chevron-left {
-  &:before {
-    content: $icon-chevron-left; 
-  }
+
+.icon-spinner:before {
+  content: "\e756";
 }
-.icon-chevron-down {
-  &:before {
-    content: $icon-chevron-down; 
-  }
+
+.icon-upload:before {
+  content: "\e76b";
 }
-.icon-chevron-up {
-  &:before {
-    content: $icon-chevron-up; 
-  }
+
+.icon-search:before {
+  content: "\e7b3";
 }
-.icon-spinner {
-  &:before {
-    content: $icon-spinner; 
-  }
+
+.icon-vertical-ellipsis:before {
+  content: "\e604";
 }
-.icon-external-link {
-  &:before {
-    content: $icon-external-link; 
-  }
+
+.icon-dot-open:before {
+  content: "\e67e";
 }
-.icon-download {
-  &:before {
-    content: $icon-download; 
-  }
+
+.icon-dot-half:before {
+  content: "\e60e";
 }
-.icon-upload {
-  &:before {
-    content: $icon-upload; 
-  }
+
+.icon--delete:before {
+  content: "\efdd";
 }
-.icon-copy {
-  &:before {
-    content: $icon-copy; 
-  }
+
+.icon-actions:before {
+  content: "\efde";
 }
-.icon-edit {
-  &:before {
-    content: $icon-edit; 
-  }
+
+.icon-list:before {
+  content: "\e63c";
 }
-.icon-trash {
-  &:before {
-    content: $icon-trash; 
-  }
+
+.icon-folder:before {
+  content: "\efdb";
 }
-.icon-delete {
-  &:before {
-    content: $icon-delete; 
-  }
+
+.icon-chevron-beginning:before {
+  content: "\e76c";
 }
-.icon-gear {
-  &:before {
-    content: $icon-gear; 
-  }
+
+.icon-error:before {
+  content: "\e62e";
 }
-.icon-globe {
-  &:before {
-    content: $icon-globe; 
-  }
+
+.icon-list-grouped:before {
+  content: "\e81d";
 }
-.icon-search {
-  &:before {
-    content: $icon-search; 
-  }
+
+.icon-fill-play:before {
+  content: "\e72f";
 }
-.icon-actions {
-  &:before {
-    content: $icon-actions; 
-  }
+
+.icon-fill-info:before {
+  content: "\e730";
 }
-.icon-vertical-ellipsis {
-  &:before {
-    content: $icon-vertical-ellipsis; 
-  }
+
+.icon-fill-stop:before {
+  content: "\e738";
 }
-.icon-dot-half {
-  &:before {
-    content: $icon-dot-half; 
-  }
+
+.icon-chevron-right:before {
+  content: "\e743";
 }
-.icon-dot-open {
-  &:before {
-    content: $icon-dot-open; 
-  }
+
+.icon-chevron-left:before {
+  content: "\e744";
 }
-.icon-dot {
-  &:before {
-    content: $icon-dot; 
-  }
+
+.icon-chevron-up:before {
+  content: "\e745";
 }
-.icon-star-open {
-  &:before {
-    content: $icon-star-open; 
-  }
+
+.icon-list-flat:before {
+  content: "\e747";
 }
-.icon-star {
-  &:before {
-    content: $icon-star; 
-  }
+
+.icon-x:before {
+  content: "\e748";
 }
-.icon-user {
-  &:before {
-    content: $icon-user; 
-  }
+
+.icon-code:before {
+  content: "\e749";
 }
-.icon-sort-down {
-  &:before {
-    content: $icon-sort-down; 
-  }
+
+.icon-info:before {
+  content: "\e75e";
 }
-.icon-sort-up {
-  &:before {
-    content: $icon-sort-up; 
-  }
+
+.icon-checkmark:before {
+  content: "\e763";
 }
-.icon-sort {
-  &:before {
-    content: $icon-sort; 
-  }
+
+.icon-warning:before {
+  content: "\e76d";
 }
-.icon-terminal {
-  &:before {
-    content: $icon-terminal; 
-  }
+
+.icon-circle-plus:before {
+  content: "\e641";
 }
-.icon-pause {
-  &:before {
-    content: $icon-pause; 
-  }
+
+.icon-logging:before {
+  content: "\e69b";
 }
-.icon-play {
-  &:before {
-    content: $icon-play; 
-  }
+
+.icon-file:before {
+  content: "\e66a";
 }
-.icon-docker {
-  &:before {
-    content: $icon-docker; 
-  }
+
+.icon-chevron-end:before {
+  content: "\e600";
 }
-.icon-github {
-  &:before {
-    content: $icon-github; 
-  }
+
+.icon-close:before {
+  content: "\efdc";
 }
-.icon-istio {
-  &:before {
-    content: $icon-istio; 
-  }
+
+.icon-plus:before {
+  content: "\e664";
 }
-.icon-rio {
-  &:before {
-    content: $icon-rio; 
-  }
+
+.icon-minus:before {
+  content: "\e67a";
 }
-.icon-marketplace {
-  &:before {
-    content: $icon-marketplace; 
-  }
+
+.icon-sort-up:before {
+  content: "\e68a";
 }
-.icon-compass {
-  &:before {
-    content: $icon-compass; 
-  }
+
+.icon-sort-down:before {
+  content: "\e68b";
 }
-.icon-cluster {
-  &:before {
-    content: $icon-cluster; 
-  }
+
+.icon-sort:before {
+  content: "\e694";
 }
 
