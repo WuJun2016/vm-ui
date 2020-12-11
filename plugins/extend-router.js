@@ -49,11 +49,11 @@ export function queryParamsFor(current, qp, defaults = {}) {
 
 export default ({ app, store }) => {
   app.router.beforeEach((to, from, next) => {
-    if ('getSelection' in window) {
-      window.getSelection().removeAllRanges();
-    } else if (document.selection) {
-      document.selection.empty();
-    }
+    // if ('getSelection' in window) {
+    //   window.getSelection().removeAllRanges();
+    // } else if (document.selection) {
+    //   document.selection.empty();
+    // }
     next();
   });
 };
